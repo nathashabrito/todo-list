@@ -14,3 +14,4 @@ export const env = schema.parse(process.env);
 // helper: transforma "a,b,c" em array para o CORS
 export const corsOrigin =
   env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(',').map(s => s.trim());
+
