@@ -1,3 +1,77 @@
+# Todo List API
+
+API REST para gerenciamento de tarefas (Todo List) construída com Node.js, TypeScript, Fastify e Prisma.
+
+## 🚀 Tecnologias
+
+- **Node.js** - Runtime JavaScript
+- **TypeScript** - Tipagem estática
+- **Fastify** - Framework web rápido
+- **Prisma** - ORM para banco de dados
+- **SQLite** - Banco de dados (desenvolvimento)
+- **Zod** - Validação de schemas
+
+## 📋 Pré-requisitos
+
+- Node.js 18+ instalado
+- npm ou yarn
+
+## ⚡ Início Rápido
+
+1. Clone o repositório:
+```powershell
+git clone <url-do-repo>
+cd todo-list
+```
+
+2. Instale as dependências:
+```powershell
+cd api
+npm install
+```
+
+3. Configure o ambiente:
+```powershell
+cp .env.example .env
+```
+
+4. Execute as migrações:
+```powershell
+npm run prisma:migrate
+```
+
+5. Inicie o servidor:
+```powershell
+npm run dev
+```
+
+6. Teste a API:
+```powershell
+curl.exe http://localhost:3333/health
+```
+
+## 📚 Endpoints da API
+
+### Health Check
+- `GET /health` - Verifica se a API está funcionando
+
+### Todos (em desenvolvimento)
+- `GET /todos` - Lista todas as tarefas
+- `POST /todos` - Cria uma nova tarefa
+- `PUT /todos/:id` - Atualiza uma tarefa
+- `DELETE /todos/:id` - Remove uma tarefa
+
+## 🛠️ Scripts Disponíveis
+
+```powershell
+npm run dev              # Inicia servidor em modo desenvolvimento
+npm run prisma:generate  # Gera cliente Prisma
+npm run prisma:migrate   # Executa migrações do banco
+npm run prisma:studio    # Abre interface visual do banco
+```
+
+---
+
 # Desenvolvimento
 
 Iniciei pela criação do setup do projeto, e toda estrutura do repo na branch ´back´
@@ -168,4 +242,34 @@ Datasource "db": SQLite database "dev.db" at "file:./dev.db"
 
 ``` powershell
 npm run prisma:studio
+```
+
+## 🔧 Estrutura do Projeto
+
+```
+api/
+├── prisma/
+│   ├── migrations/     # Migrações do banco
+│   ├── schema.prisma   # Schema do banco
+│   └── dev.db         # Banco SQLite (desenvolvimento)
+├── src/
+│   ├── generated/     # Cliente Prisma gerado
+│   ├── app.ts         # Configuração do Fastify
+│   ├── env.ts         # Validação de variáveis de ambiente
+│   └── server.ts      # Servidor principal
+├── .env               # Variáveis de ambiente (não commitado)
+├── .env.example       # Exemplo de variáveis
+├── package.json       # Dependências e scripts
+└── tsconfig.json      # Configuração TypeScript
+```
+
+## 🌍 Variáveis de Ambiente
+
+Copie `.env.example` para `.env` e ajuste conforme necessário:
+
+```bash
+PORT=3333                                    # Porta do servidor
+CORS_ORIGIN=http://localhost:5173          # Origem permitida no CORS
+DATABASE_URL="file:./dev.db"               # URL do banco SQLite
+JWT_SECRET=CHANGE_ME_WITH_A_LONG_SECRET    # Chave JWT (futuro)
 ```
