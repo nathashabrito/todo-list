@@ -109,4 +109,63 @@ Resposta esperada:
 {"ok":true}
 ```
 
+## Banco de dados (SQLite + Prisma):
 
+6. Install Prisma
+
+``` powershell
+npm i prisma @prisma/client
+npm pkg set scripts.prisma:generate="prisma generate"
+npm pkg set scripts.prisma:migrate="prisma migrate dev"
+npm pkg set scripts.prisma:studio="prisma studio"
+```
+
+7. Setup Prisma
+
+``` powershell
+# Criar pasta prisma e schema
+npx prisma init --datasource-provider sqlite
+
+# Editar prisma/schema.prisma
+@'
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Todo {
+  id        String   @id @default(uuid())
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+'@ | Set-Content -Encoding utf8 prisma\schema.prisma
+```
+
+8. Gerar cliente e migração
+
+``` powershell
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+O terminal deve apresentar algo como:
+``` console
+✔ Enter a name for the new migration: … init
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+✔ Generated Prisma Client (v6.14.0) to .\src\generated\prisma in 234ms
+```
+
+9. Verificar banco (opcional)
+
+``` powershell
+npm run prisma:studio
+```
