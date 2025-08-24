@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 
 export async function todosRoutes(app: FastifyInstance) {
   // GET /todos - Lista todos com filtros opcionais
-  app.get('/todos', async (request, reply) => {
+  app.get("/todos", async (request, reply) => {
     const querySchema = z.object({
-      status: z.enum(['all', 'pending', 'completed']).default('all'),
+      status: z.enum(["all", "pending", "completed"]).default("all"),
       q: z.string().optional(),
     });
 
@@ -17,8 +17,8 @@ export async function todosRoutes(app: FastifyInstance) {
     const where: any = {};
 
     // Filtro por status
-    if (status !== 'all') {
-      where.completed = status === 'completed';
+    if (status !== "all") {
+      where.completed = status === "completed";
     }
 
     // Filtro por busca no título
@@ -31,7 +31,7 @@ export async function todosRoutes(app: FastifyInstance) {
     const todos = await prisma.todo.findMany({
       where,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -39,9 +39,9 @@ export async function todosRoutes(app: FastifyInstance) {
   });
 
   // POST /todos - Criar novo todo com validação
-  app.post('/todos', async (request, reply) => {
+  app.post("/todos", async (request, reply) => {
     const createTodoSchema = z.object({
-      title: z.string().min(1, 'Title is required'),
+      title: z.string().min(1, "Title is required"),
     });
 
     const { title } = createTodoSchema.parse(request.body);
@@ -55,7 +55,7 @@ export async function todosRoutes(app: FastifyInstance) {
     return reply.status(201).send(todo);
   });
 
-  // PATCH /todos/:id - Atualizar todo (title ou completed)
+  // PATCH /todos/:id - Atualizar todo 
   app.patch("/todos/:id", async (request, reply) => {
     const paramsSchema = z.object({
       id: z.string(),
@@ -69,7 +69,7 @@ export async function todosRoutes(app: FastifyInstance) {
     const { id } = paramsSchema.parse(request.params);
     const updateData = updateTodoSchema.parse(request.body);
 
-    // Verificar se o todo existe
+    // Verifica se o todo existe
     const existingTodo = await prisma.todo.findUnique({
       where: { id },
     });
@@ -78,7 +78,7 @@ export async function todosRoutes(app: FastifyInstance) {
       return reply.status(404).send({ message: "Todo not found" });
     }
 
-    // Atualizar campos fornecidos
+    // Atualiza campos fornecidos
     const updatedTodo = await prisma.todo.update({
       where: { id },
       data: updateData,
@@ -87,7 +87,7 @@ export async function todosRoutes(app: FastifyInstance) {
     return updatedTodo;
   });
 
-  // DELETE /todos/:id - Deletar todo com status 204
+  // DELETE /todos/:id - Deleta todo com status 204
   app.delete("/todos/:id", async (request, reply) => {
     const paramsSchema = z.object({
       id: z.string(),
@@ -95,7 +95,7 @@ export async function todosRoutes(app: FastifyInstance) {
 
     const { id } = paramsSchema.parse(request.params);
 
-    // Verificar se o todo existe
+    // Verifica se o todo existe
     const existingTodo = await prisma.todo.findUnique({
       where: { id },
     });
