@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pink-200: #fbcfe8;
+  --pink-100: #fce7f3;
+  --brown-400: #8b5c42;
+  --brown-500: #6b4226;
+  --caramel: #d9a066;
+}
+
+.bg-pink-200 { background-color: var(--pink-200); }
+.bg-pink-100 { background-color: var(--pink-100); }
+.bg-brown-400 { background-color: var(--brown-400); }
+.bg-brown-500 { background-color: var(--brown-500); }
+.text-brown-400 { color: var(--brown-400); }
+.text-brown-500 { color: var(--brown-500); }
