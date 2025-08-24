@@ -1,272 +1,265 @@
-# Todo List — API (Fastify)
+# Todo List — API (Fastify) + Web (Vite/React)
 
-Documentação curta e fiel ao que já está feito. Termos técnicos em inglês, texto em português.
+Documentação **completa** do projeto, pronta para uso pela equipe. Texto em **português**, termos técnicos em **inglês**.
 
----
-
-## ✅ O que existe hoje
-
-* Setup do projeto (Node.js + TypeScript + Fastify + CORS)
-* `.env` + validação com Zod (`env.ts`)
-* Prisma ORM com SQLite (schema + migrate + Prisma Client)
-* Rotas implementadas:
-
-  * `GET /health` → teste de saúde da API
-  * **Todos CRUD**:
-
-    * `GET /todos` → lista todos os todos, com filtros opcionais (`status=all|pending|completed`, `q=<search>`)
-    * `POST /todos` → cria um novo todo (`title`)
-    * `PATCH /todos/:id` → atualiza um todo (`title` e/ou `completed`)
-    * `DELETE /todos/:id` → deleta um todo
+> **Stack**: Node.js + TypeScript • Fastify • Prisma ORM + SQLite (dev) • Zod • JWT (auth) • Vite + React + Tailwind (web)
 
 ---
 
-## ✨ Novas Funcionalidades e Melhorias
-
-- **Configuração de CORS Aprimorada**: Utiliza `@fastify/cors` para gerenciar o acesso de diferentes origens, permitindo a configuração de `origin` dinamicamente e o cabeçalho `Authorization`. Inclui validação de preflight OPTIONS.
-- **Endpoint de Saúde (`/health`)**: Um endpoint simples `GET /health` que retorna `{ ok: true }` para verificar a disponibilidade da aplicação.
-- **Logger Integrado**: O Fastify logger está habilitado para facilitar o monitoramento e depuração da aplicação.
-- **Validação com Zod**: Utiliza a biblioteca Zod para validação robusta de schemas de entrada (corpo da requisição, parâmetros e queries), garantindo a integridade dos dados.
-- **Formato Unificado de Erros**: Respostas de erro padronizadas com o formato `{ message, details? }` para facilitar o tratamento de erros no frontend.
-- **Códigos de Status HTTP Detalhados**: Utilização apropriada de códigos de status HTTP:
-  - `400 Bad Request`: Para erros de validação (ZodError).
-  - `401 Unauthorized`: Para erros de autenticação (UnauthorizedError).
-  - `404 Not Found`: Quando um recurso não é encontrado (ex: `Todo` não encontrado).
-  - `422 Unprocessable Entity`: (Implícito via Zod para validação semântica, embora retorne 400 explicitamente para ZodError).
-  - `500 Internal Server Error`: Para erros inesperados no servidor.
-- **Ocultar Stacktrace em Produção**: Em ambiente de produção, o stacktrace de erros é ocultado para segurança, enquanto em desenvolvimento é exibido para depuração.
-- **Testes Negativos Facilitados**: A estrutura da API permite a fácil implementação de testes negativos para cenários de IDs inválidos e payloads incorretos.
+## 🚀 Sumário
+- [Visão geral](#visão-geral)
+- [Arquitetura do repositório](#arquitetura-do-repositório)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração de ambiente](#configuração-de-ambiente)
+- [Como rodar (dev)](#como-rodar-dev)
+- [API Reference](#api-reference)
+  - [Auth](#auth)
+  - [Todos](#todos)
+- [Padrões de código](#padrões-de-código)
+- [Scripts úteis](#scripts-úteis)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap curto](#roadmap-curto)
+- [Licença](#licença)
 
 ---
 
-## 🗂️ Estrutura do diretório
+## Visão geral
+Aplicação de **lista de tarefas** com autenticação **JWT**. O **back-end** expõe uma **API REST** protegida e o **front-end** (Vite/React) consome essa API, oferecendo tela de **login** e CRUD de **todos** (com filtro por status e busca).
 
+- **Fail-fast** com `Zod` validando variáveis do `.env` via `env.ts` (não sobe sem `JWT_SECRET`, etc.).
+- **Schema-first** com `Prisma` e **migrations**.
+- **CORS** configurável para permitir o front em `localhost` (ou outras origens).
+
+---
+
+## Arquitetura do repositório
 ```
-api/
-├─ prisma/
-│ ├─ schema.prisma
-│ └─ migrations/…
-├─ src/
-│ ├─ env.ts # carrega .env e valida com Zod
-│ ├─ lib/
-│ │ └─ prisma.ts # PrismaClient (singleton)
-│ ├─ routes/
-│ │ └─ todo.ts # todas as rotas do recurso todo
-│ ├─ app.ts # instancia Fastify, registra CORS, /health, /todos
-│ └─ server.ts # inicia o servidor
-├─ .env # variáveis locais (não comitar)
-├─ .env.example
-├─ package.json
-└─ tsconfig.json
+todo-list/
+├─ api/                      # Back-end (Fastify + Prisma + SQLite)
+│  ├─ prisma/
+│  │  ├─ schema.prisma
+│  │  └─ migrations/…
+│  ├─ src/
+│  │  ├─ routes/
+│  │  │  ├─ auth.ts         # /auth (register, login, me)
+│  │  │  └─ todo.ts         # /todos (CRUD, por usuário)
+│  │  ├─ lib/
+│  │  │  ├─ prisma.ts       # PrismaClient (singleton)
+│  │  │  └─ hash.ts         # bcrypt helpers
+│  │  ├─ errors/
+│  │  │  └─ unauthorized-error.ts
+│  │  ├─ env.ts             # validação de variáveis ambiente
+│  │  ├─ app.ts             # plugins, CORS, JWT, errorHandler
+│  │  └─ server.ts          # bootstrap
+│  ├─ .env                  # NÃO commitar
+│  ├─ .env.example
+│  ├─ package.json
+│  └─ tsconfig.json
+└─ web/                      # Front-end (Vite + React + Tailwind)
+   ├─ .env
+   ├─ src/
+   ├─ index.html
+   ├─ package.json
+   └─ vite.config.ts
 ```
+
+> **ESM note (API)**: imports locais usam sufixo **`.js`** nas rotas/libs (`../lib/prisma.js`).
 
 ---
 
-## 🌍 Variáveis de ambiente (`api/.env`)
+## Pré-requisitos
+- **Node.js 20+** (ou 22+), **npm**.
+- **Git**.
+- (Dev) **SQLite** já embutido via Prisma; nenhum serviço extra.
 
-Copie de `.env.example` e ajuste se preciso:
+---
 
-```
+## Configuração de ambiente
+
+### API (`api/.env`)
+Copie de `.env.example` e ajuste se necessário:
+```env
 PORT=3333
 CORS_ORIGIN=http://localhost:5173
 DATABASE_URL="file:./dev.db"
 JWT_SECRET=CHANGE_ME_WITH_A_LONG_RANDOM_SECRET
 ```
+- `CORS_ORIGIN` aceita múltiplas origens separadas por vírgula (ex.: `http://localhost:5173,http://127.0.0.1:5173`).
 
-* `CORS_ORIGIN` aceita múltiplas origens separadas por vírgula
-  (ex.: `http://localhost:5173,http://127.0.0.1:5173`)
+### Web (`web/.env`)
+```env
+VITE_API_URL=http://localhost:3333
+```
 
 ---
 
-## ⚡ Como rodar (Windows / PowerShell)
+## Como rodar (dev)
 
-Dentro de `todo-list/api`:
-
-```powershell
+### 1) API
+```bash
+# dentro de ./api
 npm i
 npx prisma generate
 npx prisma migrate dev --name init
 npm run dev
+# API em http://localhost:3333
 ```
 
-Teste de saúde:
-
-```powershell
-curl.exe http://localhost:3333/health
-# -> {"ok":true}
+**Opcional (visualizar DB):**
+```bash
+npx prisma studio
 ```
+
+### 2) Web
+```bash
+# dentro de ./web
+npm i
+npm run dev
+# Web em http://localhost:5173
+```
+
+> Garanta que o `VITE_API_URL` (web) aponta para a porta da API.
 
 ---
 
-## 🧰 Scripts úteis
+## API Reference
 
-```text
-npm run dev              # Fastify + tsx
-npx prisma generate      # gera Prisma Client
-npx prisma migrate dev   # cria/aplica migração
-npx prisma studio        # UI do banco (SQLite)
+### Autenticação
+Base URL: `http://localhost:3333`
+
+#### POST `/auth/register`
+Cria usuário.
+```jsonc
+// body
+{ "email": "user@example.com", "password": "123456" }
+
+// 201
+{ "id": "uuid", "email": "user@example.com", "createdAt": "2025-01-01T..." }
 ```
+
+#### POST `/auth/login`
+Retorna token JWT (expira em 7 dias).
+```jsonc
+// body
+{ "email": "user@example.com", "password": "123456" }
+
+// 200
+{ "token": "eyJhbGciOi..." }
+```
+
+#### GET `/auth/me`  (Bearer token)
+```http
+Authorization: Bearer <token>
+```
+```jsonc
+// 200
+{ "user": { "id": "uuid", "email": "user@example.com", "createdAt": "..." } }
+```
+
+> **Erros padronizados**: `401 { "message": "Not authenticated" }`, `409 { "message": "Email already registered" }`, `400/422` para validação.
 
 ---
 
-## 📝 Endpoints — Todos
+### Todos (autenticados)
+Todas as rotas exigem `Authorization: Bearer <token>`.
 
-### 1. Listar todos
-
-**GET /todos**
-
-**Exemplo Request:**
-
-```
-GET http://localhost:3333/todos?status=pending&q=estudar
-```
-
-**Exemplo Response 200:**
-
-```json
+#### GET `/todos?status=all|pending|completed&q=texto`
+Lista os todos **do usuário autenticado**, com filtros.
+```jsonc
+// 200
 {
   "todos": [
     {
-      "id": "e417e892-536d-4e57-8901-18a84854ba32",
-      "title": "Estudar Fastify",
+      "id": "uuid",
+      "title": "Minha tarefa",
       "completed": false,
-      "createdAt": "2025-08-23T15:00:00.000Z"
+      "userId": "uuid",
+      "createdAt": "2025-01-01T...",
+      "updatedAt": "2025-01-01T..."
     }
   ]
 }
 ```
 
-### Exemplos cURL para GET /todos
+#### POST `/todos`
+Cria um todo para o usuário autenticado.
+```jsonc
+// body
+{ "title": "Comprar café" }
 
-```bash
-# Listar todos os todos
-curl -X GET http://localhost:3333/todos
-
-# Listar todos pendentes
-curl -X GET "http://localhost:3333/todos?status=pending"
-
-# Buscar todos com 'comprar' no título
-curl -X GET "http://localhost:3333/todos?q=comprar"
-
-# Combinar filtros
-curl -X GET "http://localhost:3333/todos?status=completed&q=trabalho"
-```
-
----
-
-### 2. Criar um todo
-
-**POST /todos**
-
-**Body JSON:**
-
-```json
+// 201
 {
-  "title": "Aprender Prisma"
-}
-```
-
-**Response 201:**
-
-```json
-{
-  "id": "b123e892-536d-4e57-8901-18a84854ba33",
-  "title": "Aprender Prisma",
+  "id": "uuid",
+  "title": "Comprar café",
   "completed": false,
-  "createdAt": "2025-08-23T15:10:00.000Z"
+  "userId": "uuid",
+  "createdAt": "...",
+  "updatedAt": "..."
 }
 ```
 
-### Exemplo cURL para POST /todos
+#### PATCH `/todos/:id`
+Atualiza campos permitidos **do usuário autenticado**.
+```jsonc
+// body (qualquer combinação)
+{ "title": "Novo título", "completed": true }
 
+// 200
+{ "id": "uuid", "title": "Novo título", "completed": true, "userId": "uuid", ... }
+```
+
+#### DELETE `/todos/:id`
+Remove um todo **do usuário autenticado**.
+```http
+// 204 No Content
+```
+
+> **Nota de segurança**: todas as operações de todos checam posse do usuário (`where: { id, userId }` ou `userId` no filtro).
+
+---
+
+## Padrões de código
+- **TypeScript strict**, **ES Modules**.
+- **Uma instância** de `PrismaClient` em `src/lib/prisma.ts`.
+- **Plugins de rotas** registrados em `app.ts` com `prefix` (ex.: `/auth`).
+- **Zod** para validar `env` e entradas (body/query/params).
+- **HTTP status** apropriados: 201 (create), 204 (delete), 400/422 (validation), 401 (auth), 404 (not found).
+
+---
+
+## Scripts úteis
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"title": "Comprar leite"}' http://localhost:3333/todos
+# API
+npm run dev              # Fastify + tsx (dev server)
+npx prisma generate      # gera Prisma Client
+npx prisma migrate dev   # cria/aplica migração do schema
+npx prisma studio        # UI do banco SQLite
+
+# Web
+npm run dev              # Vite dev server
+npm run build            # build de produção
+npm run preview          # preview local do build
 ```
 
 ---
 
-### 3. Atualizar um todo
-
-**PATCH /todos/\:id**
-
-**Body JSON (um ou ambos campos):**
-
-```json
-{
-  "title": "Estudar Fastify e Prisma",
-  "completed": true
-}
-```
-
-**Response 200:**
-
-```json
-{
-  "id": "e417e892-536d-4e57-8901-18a84854ba32",
-  "title": "Estudar Fastify e Prisma",
-  "completed": true,
-  "createdAt": "2025-08-23T15:00:00.000Z"
-}
-```
-
-**Response 404 (quando o ID não existe):**
-
-```json
-{
-  "message": "Todo not found"
-}
-```
-
-### Exemplos cURL para PATCH /todos/:id
-
-```bash
-# Substitua <TODO_ID> pelo ID real do todo
-curl -X PATCH -H "Content-Type: application/json" -d '{"completed": true}' http://localhost:3333/todos/<TODO_ID>
-
-curl -X PATCH -H "Content-Type: application/json" -d '{"title": "Comprar pão e leite"}' http://localhost:3333/todos/<TODO_ID>
-```
+## Troubleshooting
+- **PowerShell vs CMD**: em PowerShell use **crase ( ` )** para quebrar linha; `^` é do CMD.
+- **BOM em package.json** (“Unexpected token …”): salve sem BOM.
+  ```powershell
+  $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [IO.File]::WriteAllText("package.json", (Get-Content package.json -Raw), $Utf8NoBom)
+  npm i
+  ```
+- **ERR_MODULE_NOT_FOUND ao importar libs locais**: use sufixo **`.js`** em imports ESM locais (`../lib/prisma.js`).
+- **401 em rotas protegidas**: verifique header `Authorization: Bearer <token>` e `JWT_SECRET` no `.env`.
 
 ---
 
-### 4. Deletar um todo
-
-**DELETE /todos/\:id**
-
-**Response 204 No Content** (sem body)
-**Response 404 (quando o ID não existe):**
-
-```json
-{
-  "message": "Todo not found"
-}
-```
-
-### Exemplo cURL para DELETE /todos/:id
-
-```bash
-# Substitua <TODO_ID> pelo ID real do todo
-curl -X DELETE http://localhost:3333/todos/<TODO_ID>
-```
+## Roadmap curto
+- Testes de rota (Vitest/Supertest).
+- Seed de dados de desenvolvimento.
+- Deploy (API e Web).
 
 ---
-
-## 🆘 Troubleshooting (casos reais)
-
-* BOM no package.json (“Unexpected token”): grave sem BOM
-
-```powershell
-$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-[IO.File]::WriteAllText("package.json", (Get-Content package.json -Raw), $Utf8NoBom)
-npm i
-```
-
-* ERR\_MODULE\_NOT\_FOUND: `src/server.ts`: rode `npm run dev` dentro de `api/` e confirme que `src/server.ts` existe.
-* Prisma não encontra schema: execute os comandos na pasta `api/`; confirme `prisma/schema.prisma`.
-* Studio não abre: escolha outra porta `npx prisma studio --port 5555`.
-
----
-
-## 📝 Observação
-
-Este README reflete o estado atual da API. Novas funcionalidades (como autenticação) serão documentadas quando implementadas.
 
