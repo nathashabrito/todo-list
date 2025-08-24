@@ -1,100 +1,47 @@
-Todo List — API (Fastify)
+# Todo List — API (Fastify)
 
 Documentação curta e fiel ao que já está feito. Termos técnicos em inglês, texto em português.
 
+---
 
+## ✅ O que existe hoje
 
+* Setup do projeto (Node.js + TypeScript + Fastify + CORS)
+* `.env` + validação com Zod (`env.ts`)
+* Prisma ORM com SQLite (schema + migrate + Prisma Client)
+* Rotas implementadas:
 
-✅ O que existe hoje
+  * `GET /health` → teste de saúde da API
+  * **Todos CRUD**:
 
-•
-Setup do projeto (Node.js + TypeScript + Fastify + CORS)
+    * `GET /todos` → lista todos os todos, com filtros opcionais (`status=all|pending|completed`, `q=<search>`)
+    * `POST /todos` → cria um novo todo (`title`)
+    * `PATCH /todos/:id` → atualiza um todo (`title` e/ou `completed`)
+    * `DELETE /todos/:id` → deleta um todo
 
-•
-.env + validação com Zod (env.ts)
+---
 
-•
-Prisma ORM com SQLite (schema + migrate + Prisma Client)
+## ✨ Novas Funcionalidades e Melhorias
 
-•
-Rotas implementadas:
+- **Configuração de CORS Aprimorada**: Utiliza `@fastify/cors` para gerenciar o acesso de diferentes origens, permitindo a configuração de `origin` dinamicamente e o cabeçalho `Authorization`. Inclui validação de preflight OPTIONS.
+- **Endpoint de Saúde (`/health`)**: Um endpoint simples `GET /health` que retorna `{ ok: true }` para verificar a disponibilidade da aplicação.
+- **Logger Integrado**: O Fastify logger está habilitado para facilitar o monitoramento e depuração da aplicação.
+- **Validação com Zod**: Utiliza a biblioteca Zod para validação robusta de schemas de entrada (corpo da requisição, parâmetros e queries), garantindo a integridade dos dados.
+- **Formato Unificado de Erros**: Respostas de erro padronizadas com o formato `{ message, details? }` para facilitar o tratamento de erros no frontend.
+- **Códigos de Status HTTP Detalhados**: Utilização apropriada de códigos de status HTTP:
+  - `400 Bad Request`: Para erros de validação (ZodError).
+  - `401 Unauthorized`: Para erros de autenticação (UnauthorizedError).
+  - `404 Not Found`: Quando um recurso não é encontrado (ex: `Todo` não encontrado).
+  - `422 Unprocessable Entity`: (Implícito via Zod para validação semântica, embora retorne 400 explicitamente para ZodError).
+  - `500 Internal Server Error`: Para erros inesperados no servidor.
+- **Ocultar Stacktrace em Produção**: Em ambiente de produção, o stacktrace de erros é ocultado para segurança, enquanto em desenvolvimento é exibido para depuração.
+- **Testes Negativos Facilitados**: A estrutura da API permite a fácil implementação de testes negativos para cenários de IDs inválidos e payloads incorretos.
 
-•
-GET /health → teste de saúde da API
+---
 
-•
-Todos CRUD:
+## 🗂️ Estrutura do diretório
 
-•
-GET /todos → lista todos os todos, com filtros opcionais (status=all|pending|completed, q=<search>)
-
-•
-POST /todos → cria um novo todo (title)
-
-•
-PATCH /todos/:id → atualiza um todo (title e/ou completed)
-
-•
-DELETE /todos/:id → deleta um todo
-
-
-
-
-
-
-
-
-✨ Novas Funcionalidades e Melhorias
-
-•
-Configuração de CORS Aprimorada: Utiliza @fastify/cors para gerenciar o acesso de diferentes origens, permitindo a configuração de origin dinamicamente e o cabeçalho Authorization. Inclui validação de preflight OPTIONS.
-
-•
-Endpoint de Saúde (/health): Um endpoint simples GET /health que retorna { ok: true } para verificar a disponibilidade da aplicação.
-
-•
-Logger Integrado: O Fastify logger está habilitado para facilitar o monitoramento e depuração da aplicação.
-
-•
-Validação com Zod: Utiliza a biblioteca Zod para validação robusta de schemas de entrada (corpo da requisição, parâmetros e queries), garantindo a integridade dos dados.
-
-•
-Formato Unificado de Erros: Respostas de erro padronizadas com o formato { message, details? } para facilitar o tratamento de erros no frontend.
-
-•
-Códigos de Status HTTP Detalhados: Utilização apropriada de códigos de status HTTP:
-
-•
-400 Bad Request: Para erros de validação (ZodError).
-
-•
-401 Unauthorized: Para erros de autenticação (UnauthorizedError).
-
-•
-404 Not Found: Quando um recurso não é encontrado (ex: Todo não encontrado).
-
-•
-422 Unprocessable Entity: (Implícito via Zod para validação semântica, embora retorne 400 explicitamente para ZodError).
-
-•
-500 Internal Server Error: Para erros inesperados no servidor.
-
-
-
-•
-Ocultar Stacktrace em Produção: Em ambiente de produção, o stacktrace de erros é ocultado para segurança, enquanto em desenvolvimento é exibido para depuração.
-
-•
-Testes Negativos Facilitados: A estrutura da API permite a fácil implementação de testes negativos para cenários de IDs inválidos e payloads incorretos.
-
-
-
-
-🗂️ Estrutura do diretório
-
-Plain Text
-
-
+```
 api/
 ├─ prisma/
 │ ├─ schema.prisma
@@ -111,89 +58,72 @@ api/
 ├─ .env.example
 ├─ package.json
 └─ tsconfig.json
+```
 
+---
 
+## 🌍 Variáveis de ambiente (`api/.env`)
 
+Copie de `.env.example` e ajuste se preciso:
 
-
-🌍 Variáveis de ambiente (api/.env)
-
-Copie de .env.example e ajuste se preciso:
-
-Plain Text
-
-
+```
 PORT=3333
 CORS_ORIGIN=http://localhost:5173
 DATABASE_URL="file:./dev.db"
 JWT_SECRET=CHANGE_ME_WITH_A_LONG_RANDOM_SECRET
+```
 
+* `CORS_ORIGIN` aceita múltiplas origens separadas por vírgula
+  (ex.: `http://localhost:5173,http://127.0.0.1:5173`)
 
-•
-CORS_ORIGIN aceita múltiplas origens separadas por vírgula
-(ex.: http://localhost:5173,http://127.0.0.1:5173)
+---
 
+## ⚡ Como rodar (Windows / PowerShell)
 
+Dentro de `todo-list/api`:
 
-
-⚡ Como rodar (Windows / PowerShell)
-
-Dentro de todo-list/api:
-
-Plain Text
-
-
+```powershell
 npm i
 npx prisma generate
 npx prisma migrate dev --name init
 npm run dev
-
+```
 
 Teste de saúde:
 
-Plain Text
-
-
+```powershell
 curl.exe http://localhost:3333/health
 # -> {"ok":true}
+```
 
+---
 
+## 🧰 Scripts úteis
 
-
-
-🧰 Scripts úteis
-
-Plain Text
-
-
+```text
 npm run dev              # Fastify + tsx
 npx prisma generate      # gera Prisma Client
 npx prisma migrate dev   # cria/aplica migração
 npx prisma studio        # UI do banco (SQLite)
+```
 
+---
 
+## 📝 Endpoints — Todos
 
+### 1. Listar todos
 
+**GET /todos**
 
-📝 Endpoints — Todos
+**Exemplo Request:**
 
-1. Listar todos
-
-GET /todos
-
-Exemplo Request:
-
-Plain Text
-
-
+```
 GET http://localhost:3333/todos?status=pending&q=estudar
+```
 
+**Exemplo Response 200:**
 
-Exemplo Response 200:
-
-JSON
-
-
+```json
 {
   "todos": [
     {
@@ -204,13 +134,11 @@ JSON
     }
   ]
 }
+```
 
+### Exemplos cURL para GET /todos
 
-Exemplos cURL para GET /todos
-
-Bash
-
-
+```bash
 # Listar todos os todos
 curl -X GET http://localhost:3333/todos
 
@@ -222,155 +150,123 @@ curl -X GET "http://localhost:3333/todos?q=comprar"
 
 # Combinar filtros
 curl -X GET "http://localhost:3333/todos?status=completed&q=trabalho"
+```
 
+---
 
+### 2. Criar um todo
 
+**POST /todos**
 
+**Body JSON:**
 
-2. Criar um todo
-
-POST /todos
-
-Body JSON:
-
-JSON
-
-
+```json
 {
   "title": "Aprender Prisma"
 }
+```
 
+**Response 201:**
 
-Response 201:
-
-JSON
-
-
+```json
 {
   "id": "b123e892-536d-4e57-8901-18a84854ba33",
   "title": "Aprender Prisma",
   "completed": false,
   "createdAt": "2025-08-23T15:10:00.000Z"
 }
+```
 
+### Exemplo cURL para POST /todos
 
-Exemplo cURL para POST /todos
-
-Bash
-
-
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{"title": "Comprar leite"}' http://localhost:3333/todos
+```
 
+---
 
+### 3. Atualizar um todo
 
+**PATCH /todos/\:id**
 
+**Body JSON (um ou ambos campos):**
 
-3. Atualizar um todo
-
-PATCH /todos/:id
-
-Body JSON (um ou ambos campos):
-
-JSON
-
-
+```json
 {
   "title": "Estudar Fastify e Prisma",
   "completed": true
 }
+```
 
+**Response 200:**
 
-Response 200:
-
-JSON
-
-
+```json
 {
   "id": "e417e892-536d-4e57-8901-18a84854ba32",
   "title": "Estudar Fastify e Prisma",
   "completed": true,
   "createdAt": "2025-08-23T15:00:00.000Z"
 }
+```
 
+**Response 404 (quando o ID não existe):**
 
-Response 404 (quando o ID não existe):
-
-JSON
-
-
+```json
 {
   "message": "Todo not found"
 }
+```
 
+### Exemplos cURL para PATCH /todos/:id
 
-Exemplos cURL para PATCH /todos/:id
-
-Bash
-
-
+```bash
 # Substitua <TODO_ID> pelo ID real do todo
 curl -X PATCH -H "Content-Type: application/json" -d '{"completed": true}' http://localhost:3333/todos/<TODO_ID>
 
 curl -X PATCH -H "Content-Type: application/json" -d '{"title": "Comprar pão e leite"}' http://localhost:3333/todos/<TODO_ID>
+```
 
+---
 
+### 4. Deletar um todo
 
+**DELETE /todos/\:id**
 
+**Response 204 No Content** (sem body)
+**Response 404 (quando o ID não existe):**
 
-4. Deletar um todo
-
-DELETE /todos/:id
-
-Response 204 No Content (sem body)
-Response 404 (quando o ID não existe):
-
-JSON
-
-
+```json
 {
   "message": "Todo not found"
 }
+```
 
+### Exemplo cURL para DELETE /todos/:id
 
-Exemplo cURL para DELETE /todos/:id
-
-Bash
-
-
+```bash
 # Substitua <TODO_ID> pelo ID real do todo
 curl -X DELETE http://localhost:3333/todos/<TODO_ID>
+```
 
+---
 
+## 🆘 Troubleshooting (casos reais)
 
+* BOM no package.json (“Unexpected token”): grave sem BOM
 
-
-🆘 Troubleshooting (casos reais)
-
-•
-BOM no package.json (“Unexpected token”): grave sem BOM
-
-Plain Text
-
-
+```powershell
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText("package.json", (Get-Content package.json -Raw), $Utf8NoBom)
 npm i
+```
 
+* ERR\_MODULE\_NOT\_FOUND: `src/server.ts`: rode `npm run dev` dentro de `api/` e confirme que `src/server.ts` existe.
+* Prisma não encontra schema: execute os comandos na pasta `api/`; confirme `prisma/schema.prisma`.
+* Studio não abre: escolha outra porta `npx prisma studio --port 5555`.
 
-•
-ERR_MODULE_NOT_FOUND: src/server.ts: rode npm run dev dentro de api/ e confirme que src/server.ts existe.
+---
 
-•
-Prisma não encontra schema: execute os comandos na pasta api/; confirme prisma/schema.prisma.
-
-•
-Studio não abre: escolha outra porta npx prisma studio --port 5555.
-
-
-
-
-📝 Observação
+## 📝 Observação
 
 Este README reflete o estado atual da API. Novas funcionalidades (como autenticação) serão documentadas quando implementadas.
-
 
