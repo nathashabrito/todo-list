@@ -1,10 +1,12 @@
-import { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import { PrismaClient } from "../generated/prisma";
-
-const prisma = new PrismaClient();
+import { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { prisma } from "../lib/prisma.js";
 
 export async function todosRoutes(app: FastifyInstance) {
+  app.addHook("preHandler", app.authenticate);
+
+  const getUserId = (req: any) => (req as any).user.sub as string;
+
   // GET /todos - Lista todos com filtros opcionais
   app.get("/todos", async (request, reply) => {
     const querySchema = z.object({
@@ -45,69 +47,40 @@ export async function todosRoutes(app: FastifyInstance) {
     });
 
     const { title } = createTodoSchema.parse(request.body);
+    const userId = getUserId(request);             // ← pega do token
 
     const todo = await prisma.todo.create({
-      data: {
-        title,
-      },
+      data: { title, userId },                     // ← associa ao dono
     });
 
     return reply.status(201).send(todo);
   });
 
-  // PATCH /todos/:id - Atualizar todo 
+  // PATCH /todos/:id
   app.patch("/todos/:id", async (request, reply) => {
-    const paramsSchema = z.object({
-      id: z.string(),
-    });
-
-    const updateTodoSchema = z.object({
-      title: z.string().min(1).optional(),
-      completed: z.boolean().optional(),
-    });
+    const paramsSchema = z.object({ id: z.string() });
+    const bodySchema   = z.object({ title: z.string().min(1).optional(), completed: z.boolean().optional() });
 
     const { id } = paramsSchema.parse(request.params);
-    const updateData = updateTodoSchema.parse(request.body);
+    const data   = bodySchema.parse(request.body);
+    const userId = getUserId(request);
 
-    // Verifica se o todo existe
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id },
-    });
+    const exists = await prisma.todo.findFirst({ where: { id, userId } });
+    if (!exists) return reply.status(404).send({ message: "Todo not found" });
 
-    if (!existingTodo) {
-      return reply.status(404).send({ message: "Todo not found" });
-    }
-
-    // Atualiza campos fornecidos
-    const updatedTodo = await prisma.todo.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return updatedTodo;
+    const updated = await prisma.todo.update({ where: { id }, data });
+    return updated;
   });
 
-  // DELETE /todos/:id - Deleta todo com status 204
+  // DELETE /todos/:id
   app.delete("/todos/:id", async (request, reply) => {
-    const paramsSchema = z.object({
-      id: z.string(),
-    });
+    const { id } = z.object({ id: z.string() }).parse(request.params);
+    const userId = getUserId(request);
 
-    const { id } = paramsSchema.parse(request.params);
+    const exists = await prisma.todo.findFirst({ where: { id, userId } });
+    if (!exists) return reply.status(404).send({ message: "Todo not found" });
 
-    // Verifica se o todo existe
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id },
-    });
-
-    if (!existingTodo) {
-      return reply.status(404).send({ message: "Todo not found" });
-    }
-
-    await prisma.todo.delete({
-      where: { id },
-    });
-
+    await prisma.todo.delete({ where: { id } });
     return reply.status(204).send();
   });
 }
