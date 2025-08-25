@@ -23,7 +23,7 @@ export async function buildApp() {
 
   await app.register(jwt, { secret: env.JWT_SECRET });
   
-  app.decorate("authenticate", async function (request, reply) {
+  app.decorate("authenticate", async function (request, reply) { // verifica o token JWT na requisição
     try {
       await request.jwtVerify();
     } catch {
@@ -59,3 +59,4 @@ declare module "fastify" {
     authenticate: (req: any, reply: any) => Promise<void>;
   }
 }
+

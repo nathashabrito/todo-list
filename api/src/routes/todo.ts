@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 
 export async function todosRoutes(app: FastifyInstance) {
-  app.addHook("preHandler", app.authenticate);
+  app.addHook("preHandler", app.authenticate); // garante que a função authenticate seja executada
 
   const getUserId = (req: any) => (req as any).user.sub as string;
 
@@ -15,8 +15,9 @@ export async function todosRoutes(app: FastifyInstance) {
     });
 
     const { status, q } = querySchema.parse(request.query);
+    const userId = getUserId(request); // obtem o userId do token
 
-    const where: any = {};
+    const where: any = { userId };
 
     // Filtro por status
     if (status !== "all") {
@@ -47,7 +48,7 @@ export async function todosRoutes(app: FastifyInstance) {
     });
 
     const { title } = createTodoSchema.parse(request.body);
-    const userId = getUserId(request);             // ← pega do token
+    const userId = getUserId(request);             // ← pega o userId do token
 
     const todo = await prisma.todo.create({
       data: { title, userId },                     // ← associa ao dono
@@ -84,4 +85,5 @@ export async function todosRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 }
+
 
