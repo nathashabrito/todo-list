@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3333';
 
 class ApiService {
   async request(endpoint, options = {}) {
@@ -37,31 +37,31 @@ class ApiService {
     }
   }
 
-  // Autenticação
+  // Autenticação (simulada localmente)
   async login(email, password) {
-    const response = await this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    // Simulação local - aceita qualquer email/senha
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    if (response.token) {
-      localStorage.setItem('authToken', response.token);
-    }
+    const token = 'fake-token-' + Date.now();
+    localStorage.setItem('authToken', token);
     
-    return response;
+    return {
+      user: { email, name: email.split('@')[0] },
+      token
+    };
   }
 
   async register(name, email, password) {
-    const response = await this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ name, email, password }),
-    });
+    // Simulação local - aceita qualquer dados
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    if (response.token) {
-      localStorage.setItem('authToken', response.token);
-    }
+    const token = 'fake-token-' + Date.now();
+    localStorage.setItem('authToken', token);
     
-    return response;
+    return {
+      user: { email, name },
+      token
+    };
   }
 
   async logout() {
@@ -71,25 +71,26 @@ class ApiService {
 
   // Tarefas
   async getTasks() {
-    return await this.request('/tasks');
+    const response = await this.request('/todos');
+    return response.todos || [];
   }
 
   async createTask(title) {
-    return await this.request('/tasks', {
+    return await this.request('/todos', {
       method: 'POST',
       body: JSON.stringify({ title }),
     });
   }
 
   async updateTask(id, updates) {
-    return await this.request(`/tasks/${id}`, {
-      method: 'PUT',
+    return await this.request(`/todos/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(updates),
     });
   }
 
   async deleteTask(id) {
-    return await this.request(`/tasks/${id}`, {
+    return await this.request(`/todos/${id}`, {
       method: 'DELETE',
     });
   }
