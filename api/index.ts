@@ -1,16 +1,15 @@
 import { buildApp } from "./src/app";
 
-let app: any;
-
 export default async function handler(req: any, res: any) {
-  if (!app) {
-    app = buildApp();
-    await app.ready();
-  }
+  const app = buildApp();
+  await app.ready();
+  
+  // Remove o prefixo /api da URL para o Fastify
+  const url = req.url.replace('/api', '') || '/';
   
   const response = await app.inject({
     method: req.method,
-    url: req.url,
+    url: url,
     headers: req.headers,
     payload: req.body
   });
