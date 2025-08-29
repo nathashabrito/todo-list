@@ -1,7 +1,7 @@
-import Fastify from "fastify";
+﻿import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { env } from "./env";
-import { todosRoutes } from "./routes/todo";
+import { todosRoutes } from "./routes/todo"; // <- caminho correto
 import { ZodError } from "zod";
 import { UnauthorizedError } from "./errors/unauthorized-error";
 
@@ -34,22 +34,15 @@ export function buildApp() {
 
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof ZodError) {
-      return reply.status(400).send({
-        message: "Validation error",
-        details: error.issues,
-      });
+      return reply.status(400).send({ message: "Validation error", details: error.issues });
     }
 
     if (error instanceof UnauthorizedError) {
-      return reply.status(401).send({
-        message: error.message,
-      });
+      return reply.status(401).send({ message: error.message });
     }
 
     if (env.NODE_ENV !== "production") {
       console.error(error);
-    } else {
-      // TODO: Log to an external service like DataDog/NewRelic/Sentry
     }
 
     return reply.status(500).send({ message: "Internal server error" });
@@ -57,3 +50,4 @@ export function buildApp() {
 
   return app;
 }
+
