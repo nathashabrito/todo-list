@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3333';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 class ApiService {
   async request(endpoint, options = {}) {
@@ -39,9 +39,7 @@ class ApiService {
 
   // Autenticação (simulada localmente)
   async login(email, password) {
-    // Simulação local - aceita qualquer email/senha
     await new Promise(resolve => setTimeout(resolve, 500));
-    
     const token = 'fake-token-' + Date.now();
     localStorage.setItem('authToken', token);
     
@@ -52,9 +50,7 @@ class ApiService {
   }
 
   async register(name, email, password) {
-    // Simulação local - aceita qualquer dados
     await new Promise(resolve => setTimeout(resolve, 500));
-    
     const token = 'fake-token-' + Date.now();
     localStorage.setItem('authToken', token);
     
@@ -71,26 +67,26 @@ class ApiService {
 
   // Tarefas
   async getTasks() {
-    const response = await this.request('/todos');
+    const response = await this.request('/api/todos'); // <-- corrigido
     return response.todos || [];
   }
 
   async createTask(title) {
-    return await this.request('/todos', {
+    return await this.request('/api/todos', { // <-- corrigido
       method: 'POST',
       body: JSON.stringify({ title }),
     });
   }
 
   async updateTask(id, updates) {
-    return await this.request(`/todos/${id}`, {
+    return await this.request(`/api/todos/${id}`, { // <-- corrigido
       method: 'PATCH',
       body: JSON.stringify(updates),
     });
   }
 
   async deleteTask(id) {
-    return await this.request(`/todos/${id}`, {
+    return await this.request(`/api/todos/${id}`, { // <-- corrigido
       method: 'DELETE',
     });
   }

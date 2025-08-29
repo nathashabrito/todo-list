@@ -1,132 +1,150 @@
-# 📝 Projeto 7 - Desenvolve Boticário (Front-end)
+# todo-list
+# To Do List — React + TailwindCSS
 
-Este projeto é uma aplicação de lista de tarefas (**To-Do List**) desenvolvida em **React** com **Tailwind CSS**. Foi criado como parte do programa **Desenvolve Boticário**, focando em boas práticas de desenvolvimento front-end, componentização e experiência do usuário.
+Este projeto é uma aplicação web de **To Do List**, criada para praticar conceitos fundamentais do **React**.  
+Conta com **front-end em React**, estilizado com **TailwindCSS**, e **back-end API REST**.
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## Objetivos Gerais
 
-- **React** - Biblioteca para construção da interface
-- **Tailwind CSS** - Estilização baseada em utilitários
-- **PostCSS** - Processador de CSS
-- **Jest** + **React Testing Library** - Testes unitários
-- **Create React App** - Ferramenta para inicialização do projeto
+- Criar um To Do List clássico com funcionalidades essenciais.
+- Aprender os conceitos fundamentais do React de forma prática.
+- Gerenciar estado de tarefas, carregamento e erros.
+- Construir interface responsiva para todos os dispositivos.
+- Integrar front-end com uma API REST.
 
+---
 
-## 🔎 Explicação dos Componentes
+## Estrutura do Projeto
 
-**App.jsx**  
-Componente raiz que gerencia o estado das tarefas (`tasks`) e do filtro (`filter`).  
-Integra `Header`, `Footer`, `TaskInput`, `TaskList` e `FilterButtons`.  
-Contém a lógica de adicionar, remover, alternar conclusão e filtrar tarefas.
+```
+projeto-todo-list/
+├── api/
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── errors/
+│   │   ├── app.ts/
+│   │   ├── server.ts/
+│   │   └── env.ts/
+│   ├── prisma/
+│   │   └── schema.prisma
+│   └── package.json
+├── front/
+│    ├── src/
+│        │ 
+│        ├── App.css               
+│        ├── App.jsx               
+│        ├── App.test.js          
+│        ├── index.css             
+│        ├── index.jsx             
+│        ├── logo.svg             
+│        ├── reportWebVitals.js    
+│        ├── setupTests.js         
+│        ├── postcss.config.js     
+│        ├── tailwind.config.js   
+│        │
+│        ├── styles/               
+│        │
+│        └── components/          
+│            ├── Header.jsx       
+│            ├── Footer.jsx        
+│            ├── TaskInput.jsx     
+│            ├── TaskList.jsx     
+│            ├── TaskItem.jsx      
+│            └── FilterButtons.jsx 
+└── README.md
+```
 
-**Header.jsx**  
-Exibe o título principal da aplicação.  
-Mantém a identidade visual do app (rosa pastel sofisticado). 🌸
+---
 
-**Footer.jsx**  
-Rodapé simples com informações do app.  
-Mantém consistência de layout.
+## Funcionalidades Implementadas
 
-**TaskInput.jsx**  
-Campo de texto + botão para adicionar tarefas.  
-Permite adicionar tarefas pressionando Enter.
+### ✨ Interface Moderna
+- Estilização com **TailwindCSS** e design **mobile-first**.
+- Feedback visual para status da tarefa (texto riscado ou cor diferente).
+- **Contador de tarefas**: total, pendentes e concluídas.
 
-**TaskList.jsx**  
-Renderiza todas as tarefas filtradas (todas, ativas ou concluídas).  
-Usa `TaskItem` para cada tarefa.
+### 💬 Gerenciamento de Tarefas
+- **Adicionar tarefas**: input validado para não permitir entradas vazias.
+- **Listar tarefas**: exibe todas, mostrando mensagem amigável quando a lista está vazia.
+- **Marcar como concluída**: alterna status com checkbox ou botão.
+- **Remover tarefas**: botão de delete para remover tarefas.
+- **Filtrar tarefas**: todas, pendentes ou concluídas.
 
-**TaskItem.jsx**  
-Exibe uma tarefa individual.  
-Clique na tarefa alterna entre concluída/ativa.  
-Botão "X" para exclusão da tarefa.
+---
 
-**FilterButtons.jsx**  
-Botões para alternar filtros de tarefas.  
-Destaque visual no botão ativo.
+## Configuração e Uso
 
-## 📊 Fluxo da Aplicação
+### Pré-requisitos
+- Node.js e npm
+- Editor de código (VS Code recomendado)
 
-1. O usuário insere uma nova tarefa no `TaskInput`.  
-2. O estado global de `tasks` é atualizado no `App.jsx`.  
-3. A lista exibida em `TaskList` muda conforme o filtro selecionado (`FilterButtons`).  
-4. Ao clicar em uma tarefa (`TaskItem`), o status de concluída/pendente é alternado.  
-5. O contador de tarefas (total, concluídas, pendentes) se atualiza automaticamente.
+### Instalação
 
-## 💡 Como Executar o Projeto
-
-**Pré-requisitos**  
-- Node.js  
-- Yarn ou NPM  
-
-## 🎨 Identidade Visual
-- **Tema:** Rosa pastel, girlie, mas clean  
-
-## 🖥 Layout
-- Minimalista e responsivo  
-
-## UX
-- Fácil de adicionar, remover e filtrar tarefas  
-
-## 👩‍💻 Observações
-- Todos os componentes foram pensados para serem reutilizáveis  
-- Código estruturado para facilidade de manutenção  
-- Aplicação pronta para evoluir com novas funcionalidades
-
-
-**Passos**  
+Clone o repositório:
 
 ```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/projeto7-boticario-front.git
+git clone https://www.dio.me/articles/enviando-seu-projeto-para-o-github
+cd [pasta do projeto]
+```
 
-# Acesse a pasta do projeto
-cd projeto7-boticario-front
+#### Back-end (API)
 
-# Instale as dependências
-yarn install
-# ou
+```bash
+cd backend
 npm install
+```
 
-# Execute em ambiente de desenvolvimento
-yarn start
-# ou
-npm start
-
-A aplicação será executada em: 👉 [http://localhost:3000]
-
-## 🧪 Testes
-
-Para rodar os testes unitários:
+- Crie `.env` com base em `.env.example`.
+- Configure o PostGreSQL e execute migração inicial:
 
 ```bash
-yarn test
-# ou
-npm test
+npx prisma migrate dev --name init
+```
+
+- Inicie o servidor:
+
+```bash
+npm run dev
+```
+
+#### Front-end (React)
+
+```bash
+cd ../frontend
+npm install
+```
+
+- Crie `.env` com `VITE_API_URL=http://localhost:3000`.
+- Inicie a aplicação:
+
+```bash
+npm run dev
+```
 
 ---
 
-## 📂 Estrutura do Projeto
+## Desenvolvimento
 
-```bash
-src/
-├── App.css               # Estilos globais
-├── App.jsx               # Componente principal
-├── App.test.js           # Testes iniciais
-├── index.css             # Arquivo de estilos base
-├── index.jsx             # Ponto de entrada da aplicação
-├── logo.svg              # Logo da aplicação
-├── reportWebVitals.js    # Métricas de performance
-├── setupTests.js         # Configuração de testes
-├── postcss.config.js     # Configuração do PostCSS
-├── tailwind.config.js    # Configuração do Tailwind
-│
-├── styles/               # Estilos adicionais
-│
-└── components/           # Componentes reutilizáveis
-    ├── Header.jsx        # Cabeçalho da aplicação
-    ├── Footer.jsx        # Rodapé
-    ├── TaskInput.jsx     # Campo de input para nova tarefa
-    ├── TaskList.jsx      # Lista de tarefas
-    ├── TaskItem.jsx      # Item individual da lista
-    └── FilterButtons.jsx # Botões para filtro (Todas, Ativas, Concluídas)
+### Arquitetura
+- **Back-end (Node.js + Fastify)**: API CRUD com validação e filtros usando Prisma + SQLite.
+- **Front-end (React)**: lógica de API encapsulada em `todosApi.ts` para separação de responsabilidades.
+
+### Melhorias de Qualidade
+- **Validação de dados** com Zod.
+- **Tratamento de erros** padronizado com códigos HTTP.
+- **Estilos consistentes** com TailwindCSS.
+
+---
+
+## Testes
+Planejado para:
+- Funções de filtro (helpers)
+- Componentes principais (add/toggle/delete)
+
+---
+
+## Deploy
+- Front-end pode ser publicado em **Vercel** ou **Netlify**.
+- Configure `VITE_API_URL` no ambiente de produção para comunicação com a API.
